@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Bill Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .user-section {
+            margin-bottom: 20px;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .result-table th {
+            background-color: #f4f4f4;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Split Bill Calculator</h1>
+        <div id="user-sections" class="user-section">
+            <h3>Users</h3>
+            <div class="user" id="user-1">
+                <label>Name: <input type="text" class="user-name" placeholder="Enter name"></label>
+                <div class="amounts">
+                    <label>Amount: <input type="number" class="user-amount" placeholder="Enter amount"></label>
+                    <button onclick="addAmount(this)">Add More Amount</button>
+                </div>
+            </div>
+        </div>
+        <button onclick="addUser()">Add User</button>
+
+        <h3>Extras</h3>
+        <label>Tax: <input type="number" id="tax" placeholder="Enter tax"></label>
+        <label>Tips: <input type="number" id="tips" placeholder="Enter tips"></label>
+        <label>Shared: <input type="number" id="shared" placeholder="Enter shared amount"></label>
+
+        <button onclick="calculateSplit()">Calculate</button>
+
+        <table class="result-table" id="result-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Total Amount</th>
+                    <th>Tax</th>
+                    <th>Shared</th>
+                    <th>Tips</th>
+                    <th>Final Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let userCount = 1;
+
+        function addUser() {
+            userCount++;
+            const userSection = document.createElement('div');
+            userSection.classList.add('user');
+            userSection.id = `user-${userCount}`;
+            userSection.innerHTML = `
+                <label>Name: <input type="text" class="user-name" placeholder="Enter name"></label>
+                <div class="amounts">
+                    <label>Amount: <input type="number" class="user-amount" placeholder="Enter amount"></label>
+                    <button onclick="addAmount(this)">Add More Amount</button>
+                </div>
+            `;
+            document.getElementById('user-sections').appendChild(userSection);
+        }
+
+        function addAmount(button) {
+            const amountsDiv = button.parentElement;
+            const newAmountInput = document.createElement('label');
+            newAmountInput.innerHTML = `Amount: <input type="number" class="user-amount" placeholder="Enter amount">`;
+            amountsDiv.insertBefore(newAmountInput, button);
+        }
+
+        function calculateSplit() {
+            const users = document.querySelectorAll('.user');
+            const tax = parseFloat(document.getElementById('tax').value) || 0;
+            const tips = parseFloat(document.getElementById('tips').value) || 0;
+            const shared = parseFloat(document.getElementById('shared').value) || 0;
+
+            let totalAmount = 0;
+            const userData = [];
+
+            users.forEach(user => {
+                const name = user.querySelector('.user-name').value || 'Unnamed';
+                const amounts = user.querySelectorAll('.user-amount');
+                let userTotal = 0;
+
+                amounts.forEach(amount => {
+                    userTotal += parseFloat(amount.value) || 0;
+                });
+
+                userData.push({ name, total: userTotal });
+                totalAmount += userTotal;
+            });
+
+            const resultTableBody = document.querySelector('#result-table tbody');
+            resultTableBody.innerHTML = '';
+
+            userData.forEach(user => {
+                const taxShare = (user.total / totalAmount) * tax;
+                const sharedShare = (user.total / totalAmount) * shared;
+                const tipsShare = tips / userData.length;
+                const finalAmount = user.total + taxShare + sharedShare + tipsShare;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.total.toFixed(2)}</td>
+                    <td>${taxShare.toFixed(2)}</td>
+                    <td>${sharedShare.toFixed(2)}</td>
+                    <td>${tipsShare.toFixed(2)}</td>
+                    <td>${finalAmount.toFixed(2)}</td>
+                `;
+                resultTableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
